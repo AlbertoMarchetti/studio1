@@ -38,7 +38,7 @@ const improvePromptFlow = ai.defineFlow(
   async input => {
     const prompt = ai.definePrompt({
       name: 'improvePromptPrompt',
-      prompt: `Given the following lazy prompt: "{{lazyPrompt}}", transform it into a detailed and structured prompt with the following sections:\n\nSituation: Provide context or background information.\nTask: Define the specific action to be taken.\nObjective: State the desired outcome or goal.\nKnowledge: Offer a list of relevant tips and advice.\nConclusion: Include a concluding remark or call to action.\n\nEnsure the improved prompt is clear, concise, and actionable.`,
+      prompt: `Dato il seguente prompt generico: "{{lazyPrompt}}", trasformalo in un prompt dettagliato e strutturato con le seguenti sezioni (TUTTO L'OUTPUT DEVE ESSERE IN ITALIANO):\n\nSituazione: Fornisci il contesto o le informazioni di base.\nCompito: Definisci l'azione specifica da intraprendere.\nObiettivo: Indica il risultato o l'obiettivo desiderato.\nConoscenza: Offri un elenco di suggerimenti e consigli pertinenti.\nConclusione: Includi un'osservazione conclusiva o un invito all'azione.\n\nAssicurati che il prompt migliorato sia chiaro, conciso e attuabile, e che TUTTE le sezioni e il loro contenuto siano in italiano.`,
       input: {schema: ImprovePromptInputSchema},
       output: {schema: ImprovePromptOutputSchema},
     });

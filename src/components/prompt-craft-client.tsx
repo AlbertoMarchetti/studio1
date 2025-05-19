@@ -8,27 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Copy, Loader2, Pencil } from "lucide-react";
+import { Copy, Loader2, Pencil, RefreshCcw } from "lucide-react";
 import React, { useState, useTransition } from "react";
 
-const initialGreatPromptExample: ImprovePromptOutput = {
-  situation: "You are a marketing manager for a sustainable fashion brand.",
-  task: "Develop a content strategy for an upcoming Earth Day campaign. The goal is to highlight the brand's commitment to eco-friendly practices and drive sales of a new recycled materials collection.",
-  objective: "Increase brand engagement by 20%, drive a 15% uplift in sales for the new collection, and reinforce the brand's image as a leader in sustainable fashion.",
-  knowledge: [
-    "Incorporate user-generated content by running a contest.",
-    "Partner with environmental influencers for wider reach.",
-    "Use compelling visuals that tell a story about sustainability.",
-    "Clearly communicate the impact of purchasing from the recycled collection.",
-    "Offer an early-bird discount or a special bundle for Earth Day."
-  ],
-  conclusion: "Craft compelling narratives that not only sell products but also educate and inspire your audience to make more conscious choices. The planet (and your brand) will thank you."
-};
-
-
 export default function PromptCraftClient() {
-  const [lazyPrompt, setLazyPrompt] = useState("genera 10 post per LinkedIn");
-  const [greatPrompt, setGreatPrompt] = useState<ImprovePromptOutput | null>(initialGreatPromptExample);
+  const [lazyPrompt, setLazyPrompt] = useState("");
+  const [greatPrompt, setGreatPrompt] = useState<ImprovePromptOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -38,34 +23,39 @@ export default function PromptCraftClient() {
         const result = await improvePrompt({ lazyPrompt });
         setGreatPrompt(result);
         toast({
-          title: "Prompt Improved!",
-          description: "Your super prompt has been generated.",
+          title: "Prompt Migliorato!",
+          description: "Il tuo super prompt è stato generato.",
         });
       } catch (error) {
         console.error("Error improving prompt:", error);
-        setGreatPrompt(null); // Clear or keep old prompt? Cleared for now.
+        setGreatPrompt(null); 
         toast({
-          title: "Error",
-          description: "Could not generate prompt. Please try again.",
+          title: "Errore",
+          description: "Impossibile generare il prompt. Riprova.",
           variant: "destructive",
         });
       }
     });
   };
 
-  const copyToClipboard = (text: string, type: string) => {
+  const handleNewPrompt = () => {
+    setLazyPrompt("");
+    setGreatPrompt(null);
+  };
+
+  const copyToClipboard = (text: string, promptName: "Prompt generico" | "Super prompt") => {
     navigator.clipboard.writeText(text)
       .then(() => {
         toast({
-          title: "Copied to clipboard!",
-          description: `${type} has been copied.`,
+          title: "Copiato negli appunti!",
+          description: `Il ${promptName} è stato copiato.`,
         });
       })
       .catch(err => {
         console.error("Failed to copy:", err);
         toast({
-          title: "Error",
-          description: `Could not copy ${type}.`,
+          title: "Errore",
+          description: `Impossibile copiare il ${promptName}.`,
           variant: "destructive",
         });
       });
@@ -73,19 +63,19 @@ export default function PromptCraftClient() {
 
   const formatGreatPromptForCopy = (prompt: ImprovePromptOutput | null): string => {
     if (!prompt) return "";
-    return `Situation:
+    return `Situazione:
 ${prompt.situation}
 
-Task:
+Compito:
 ${prompt.task}
 
-Objective:
+Obiettivo:
 ${prompt.objective}
 
-Knowledge:
+Conoscenza:
 ${prompt.knowledge.map(item => `- ${item}`).join("\n")}
 
-Conclusion:
+Conclusione:
 ${prompt.conclusion}`;
   };
 
@@ -98,9 +88,9 @@ ${prompt.conclusion}`;
               <Pencil className="h-5 w-5 text-primary" />
               <CardTitle>Inserisci il prompt da migliorare</CardTitle>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => copyToClipboard(lazyPrompt, "Lazy prompt")}>
+            <Button variant="ghost" size="icon" onClick={() => copyToClipboard(lazyPrompt, "Prompt generico")} disabled={!lazyPrompt.trim()}>
               <Copy className="h-4 w-4" />
-              <span className="sr-only">Copy Lazy Prompt</span>
+              <span className="sr-only">Copia Prompt Generico</span>
             </Button>
           </div>
           <CardDescription>
@@ -111,14 +101,23 @@ ${prompt.conclusion}`;
           <Textarea
             value={lazyPrompt}
             onChange={(e) => setLazyPrompt(e.target.value)}
-            placeholder="Es: genera 10 post per LinkedIn"
+            placeholder="Es: crea una campagna social per un nuovo prodotto eco-sostenibile"
             rows={4}
             className="resize-none"
           />
         </CardContent>
       </Card>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center space-x-4">
+        <Button
+          onClick={handleNewPrompt}
+          variant="outline"
+          size="lg"
+          className="px-8 py-6 text-lg font-semibold"
+        >
+          <RefreshCcw className="mr-2 h-5 w-5" />
+          Nuovo Prompt
+        </Button>
         <Button 
           onClick={handleImprovePrompt} 
           disabled={isPending || !lazyPrompt.trim()}
@@ -131,7 +130,7 @@ ${prompt.conclusion}`;
               Migliorando...
             </>
           ) : (
-            "Improve Prompt"
+            "Migliora Prompt"
           )}
         </Button>
       </div>
@@ -141,17 +140,12 @@ ${prompt.conclusion}`;
           <CardHeader>
             <div className="flex items-center justify-between">
                <div className="flex items-center gap-2">
-                 {/* <Pencil className="h-5 w-5 text-primary" /> Placeholder if Edit on Great Prompt is needed */}
                 <CardTitle>Super Prompt</CardTitle>
               </div>
               <div className="flex items-center gap-2">
-                {/* <Button variant="ghost" size="icon" onClick={() => { console.log("Edit Great Prompt (not implemented)")}}>
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit Great Prompt</span>
-                </Button> */}
-                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(formatGreatPromptForCopy(greatPrompt), "Super prompt")}>
+                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(formatGreatPromptForCopy(greatPrompt), "Super prompt")} disabled={!greatPrompt}>
                   <Copy className="h-4 w-4" />
-                  <span className="sr-only">Copy Super Prompt</span>
+                  <span className="sr-only">Copia Super Prompt</span>
                 </Button>
               </div>
             </div>
@@ -174,19 +168,19 @@ ${prompt.conclusion}`;
             ) : greatPrompt && (
               <div className="space-y-4 text-sm">
                 <div>
-                  <h3 className="font-semibold text-base text-primary mb-1">Situation:</h3>
+                  <h3 className="font-semibold text-base text-primary mb-1">Situazione:</h3>
                   <p className="text-foreground/90 whitespace-pre-wrap">{greatPrompt.situation}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base text-primary mb-1">Task:</h3>
+                  <h3 className="font-semibold text-base text-primary mb-1">Compito:</h3>
                   <p className="text-foreground/90 whitespace-pre-wrap">{greatPrompt.task}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base text-primary mb-1">Objective:</h3>
+                  <h3 className="font-semibold text-base text-primary mb-1">Obiettivo:</h3>
                   <p className="text-foreground/90 whitespace-pre-wrap">{greatPrompt.objective}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base text-primary mb-1">Knowledge:</h3>
+                  <h3 className="font-semibold text-base text-primary mb-1">Conoscenza:</h3>
                   <ul className="list-disc list-inside space-y-1 text-foreground/90 pl-2">
                     {greatPrompt.knowledge.map((item, index) => (
                       <li key={index}>{item}</li>
@@ -194,7 +188,7 @@ ${prompt.conclusion}`;
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base text-primary mb-1">Conclusion:</h3>
+                  <h3 className="font-semibold text-base text-primary mb-1">Conclusione:</h3>
                   <p className="text-foreground/90 whitespace-pre-wrap">{greatPrompt.conclusion}</p>
                 </div>
               </div>
@@ -204,7 +198,7 @@ ${prompt.conclusion}`;
             <CardFooter className="flex justify-end">
                <Button variant="outline" size="sm" onClick={() => copyToClipboard(formatGreatPromptForCopy(greatPrompt), "Super prompt")}>
                   <Copy className="mr-2 h-4 w-4" />
-                  Copy Super Prompt
+                  Copia Super Prompt
                 </Button>
             </CardFooter>
            )}
